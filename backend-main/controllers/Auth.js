@@ -10,6 +10,7 @@ const { User } = require('../models');
 
 const Login = async (req, res) => {
   try {
+    console.log('Request Body:', req.body);
     const user = await User.findOne({
       where: {
         email: req.body.email
@@ -143,7 +144,21 @@ const register = async (req, res) => {
       nama: nama
     });
 
-    // Respond with success message or additional details if needed
+    // Create a token for the new user
+    const userId = newUser.id;
+    const uniqueTokenData = `${userId}-${Date.now()}`;
+    const accessToken = jwt.sign({ userId, nama, email }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: '20s'
+    });
+
+    // Save the unique token to the user record (or wherever appropriate in your app)
+    await User.update({ refresh_token: uniqueTokenData }, {
+      where: {
+        id: userId
+      }
+    });
+
+    // Respond with success message and token
     res.status(201).json({
       status: 'success',
       message: 'Registrasi berhasil',
@@ -151,7 +166,8 @@ const register = async (req, res) => {
         id: newUser.id,
         email: newUser.email,
         nama: newUser.nama
-      }
+      },
+      accessToken: accessToken
     });
   } catch (error) {
     console.error('Error during registration:', error);
