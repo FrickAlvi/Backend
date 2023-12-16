@@ -12,7 +12,7 @@ const Login = async (req, res) => {
   try {
     const user = await User.findOne({
       where: {
-        username: req.body.username
+        email: req.body.email
       }
     });
 
@@ -28,9 +28,9 @@ const Login = async (req, res) => {
 
     const userId = user.id;
     const nama = user.nama;
-    const username = user.username;
-    const accessToken = jwt.sign({ userId, nama, username }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20s' });
-    const refreshToken = jwt.sign({ userId, nama, username }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
+    const email = user.email;
+    const accessToken = jwt.sign({ userId, nama, email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '20s' });
+    const refreshToken = jwt.sign({ userId, nama, email }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
 
     await User.update({ refresh_token: refreshToken }, {
       where: {
@@ -50,7 +50,7 @@ const Login = async (req, res) => {
       .status(404)
       .json({
         status: 'fail',
-        message: 'Username tidak ditemukan'
+        message: 'email tidak ditemukan'
       })
   }
 }
@@ -95,8 +95,8 @@ const refreshToken = async (req, res) => {
       if (err) return res.sendStatus(403);
       const userId = user.id;
       const nama = user.nama;
-      const username = user.username;
-      const accessToken = jwt.sign({ userId, nama, username }, process.env.ACCESS_TOKEN_SECRET, {
+      const email = user.email;
+      const accessToken = jwt.sign({ userId, nama, email }, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: '15s'
       });
       res.json({ accessToken });
@@ -109,27 +109,27 @@ const refreshToken = async (req, res) => {
 const register = async (req, res) => {
   try {
     console.log('Request Body:', req.body);
-    const { username, password, nama } = req.body;
+    const { email, password, nama } = req.body;
 
     // Check if the request body contains the necessary fields
-    if (!username || !password || !nama) {
+    if (!email || !password || !nama) {
       return res.status(400).json({
         status: 'fail',
         message: 'Mohon lengkapi semua field'
       });
     }
 
-    // Check if the username already exists
+    // Check if the email already exists
     const existingUser = await User.findOne({
       where: {
-        username: username
+        email: email
       }
     });
 
     if (existingUser) {
       return res.status(400).json({
         status: 'fail',
-        message: 'Username sudah digunakan'
+        message: 'email sudah digunakan'
       });
     }
 
@@ -138,7 +138,7 @@ const register = async (req, res) => {
 
     // Create a new user
     const newUser = await User.create({
-      username: username,
+      email: email,
       password: hashedPassword,
       nama: nama
     });
@@ -149,7 +149,7 @@ const register = async (req, res) => {
       message: 'Registrasi berhasil',
       user: {
         id: newUser.id,
-        username: newUser.username,
+        email: newUser.email,
         nama: newUser.nama
       }
     });
