@@ -7,11 +7,7 @@ var logger = require('morgan');
 
 var authRouter = require('./routes/auth');
 var indexRouter = require('./routes/index');
-var satwaRouter = require('./routes/satwa');
-var donasiRouter = require('./routes/donasi');
 var userRouter = require('./routes/user');
-var satwaDonasiRouter = require('./routes/satwaDonasi');
-var satwaGambarRouter = require('./routes/satwaGambar');
 var predictRouter = require('./routes/predict');
 var transaksiRouter = require('./routes/transaksi');
 
@@ -45,11 +41,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/auth', authRouter);
 app.use('/', indexRouter);
-app.use('/satwa', satwaRouter);
-app.use('/donasi', donasiRouter);
 app.use('/user', userRouter);
-app.use('/satwa-donasi', satwaDonasiRouter);
-app.use('/satwa-gambar', satwaGambarRouter);
 app.use('/predict', predictRouter);
 app.use('/transaksi', transaksiRouter);
 

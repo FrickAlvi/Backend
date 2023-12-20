@@ -15,26 +15,7 @@ const bucket = storage.bucket(process.env.GCS_BUCKET);
 
 const uuidv1 = uuid.v1;
 
-const { Satwa } = require('../models');
-
-const predictMain = async (req, res) => {
-  // const getRandom = await axios.post('http://34.101.145.236:8080/predict/random');
-  // const randomSatwa = getRandom.data;
-
-  // if (randomSatwa.status) {
-  //   return res
-  //     .status(400)
-  //     .json({
-  //       status: 'fail',
-  //       message: 'Tidak terdeteksi'
-  //     });
-  // }
-
-  // const findSatwa = await Satwa.findOne({
-  //   where: {
-  //     nama: randomSatwa.nama
-  //   }
-  // });
+const predictMainBali = async (req, res) => {
 
   if (req.file) {
     const ext = path.extname(req.file.originalname).toLowerCase();
@@ -65,23 +46,127 @@ const predictMain = async (req, res) => {
       const filename = blob.name.replaceAll('predict_uploads/', '');;
 
       try {
-        const getPrediction = await axios.post(process.env.API_PREDICT_HOST, {
+        const getPrediction = await axios.post(process.env.API_PREDICT_HOST_BALI, {
           filename: filename
         });
-        const predictedSatwa = getPrediction.data;
+        const predictedAksara = getPrediction.data;
+        return res.json(predictedAksara);
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(400)
+          .json({
+            status: 'fail',
+            message: 'Tidak terdeteksi'
+          });
+      }
+    });
 
-        const findSatwa = await Satwa.findOne({
-          where: {
-            nama: predictedSatwa.nama
-          }
+    blobStream.end(req.file.buffer);
+  } else {
+    return res
+      .status(400)
+      .json({
+        status: 'fail',
+        message: 'Mohon mengisi semua kolom yang diperlukan'
+      });
+  }
+}
+
+const predictMainSunda = async (req, res) => {
+
+  if (req.file) {
+    const ext = path.extname(req.file.originalname).toLowerCase();
+
+    if (ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg' && ext !== '.webp') {
+      return res
+        .status(404)
+        .json({
+          status: 'fail',
+          message: 'Hanya dapat menggunakan file gambar (.png, .jpg, .jpeg atau .webp)'
         });
+    }
 
-        if (!findSatwa) {
-          const satwa = await Satwa.create(predictedSatwa);
-          return res.json(satwa);
-        }
+    const newFilename = `${uuidv1()}-${req.file.originalname}`;
+    const blob = bucket.file(`predict_uploads/${newFilename}`);
+    const blobStream = blob.createWriteStream();
 
-        res.json(findSatwa);
+    blobStream.on('error', (error) => {
+      return res
+        .status(400)
+        .json({
+          status: 'fail',
+          message: error
+        });
+    });
+
+    blobStream.on('finish', async () => {
+      const filename = blob.name.replaceAll('predict_uploads/', '');;
+
+      try {
+        const getPrediction = await axios.post(process.env.API_PREDICT_HOST_SUNDA, {
+          filename: filename
+        });
+        const predictedAksara = getPrediction.data;
+        return res.json(predictedAksara);
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(400)
+          .json({
+            status: 'fail',
+            message: 'Tidak terdeteksi'
+          });
+      }
+    });
+
+    blobStream.end(req.file.buffer);
+  } else {
+    return res
+      .status(400)
+      .json({
+        status: 'fail',
+        message: 'Mohon mengisi semua kolom yang diperlukan'
+      });
+  }
+}
+
+const predictMainLampung = async (req, res) => {
+
+  if (req.file) {
+    const ext = path.extname(req.file.originalname).toLowerCase();
+
+    if (ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg' && ext !== '.webp') {
+      return res
+        .status(404)
+        .json({
+          status: 'fail',
+          message: 'Hanya dapat menggunakan file gambar (.png, .jpg, .jpeg atau .webp)'
+        });
+    }
+
+    const newFilename = `${uuidv1()}-${req.file.originalname}`;
+    const blob = bucket.file(`predict_uploads/${newFilename}`);
+    const blobStream = blob.createWriteStream();
+
+    blobStream.on('error', (error) => {
+      return res
+        .status(400)
+        .json({
+          status: 'fail',
+          message: error
+        });
+    });
+
+    blobStream.on('finish', async () => {
+      const filename = blob.name.replaceAll('predict_uploads/', '');;
+
+      try {
+        const getPrediction = await axios.post(process.env.API_PREDICT_HOST_LAMPUNG, {
+          filename: filename
+        });
+        const predictedAksara = getPrediction.data;
+        return res.json(predictedAksara);
       } catch (error) {
         console.log(error);
         return res
@@ -105,58 +190,15 @@ const predictMain = async (req, res) => {
 }
 
 const predictRandom = async (req, res) => {
-  const random_satwa = [{
-    nama: 'Macan',
-    nama_saintifik: 'Panthera Pardus Melas',
-    lokasi: '',
-    populasi: '',
-    funfact: ''
-  },
-  {
-    nama: 'Beruang Madu',
-    nama_saintifik: 'Helarctos Malayanus',
-    lokasi: '',
-    populasi: '',
-    funfact: ''
-  },
-  {
-    nama: 'Gajah Asia',
-    nama_saintifik: '',
-    lokasi: '',
-    populasi: '',
-    funfact: ''
-  },
-  {
-    nama: 'Burung',
-    nama_saintifik: 'Buceroa Rhinoceros',
-    lokasi: '',
-    populasi: '',
-    funfact: ''
-  },
-  {
-    nama: 'Tapir',
-    nama_saintifik: 'Tapirus Indicus',
-    lokasi: '',
-    populasi: '',
-    funfact: ''
-  },
-  {
-    nama: 'Bekantan',
-    nama_saintifik: 'Nasalis Larvatus',
-    lokasi: '',
-    populasi: '',
-    funfact: ''
-  },
-  {
-    status: 'fail'
-  }];
 
-  const response = random_satwa[Math.floor(Math.random() * random_satwa.length)];
+  const response = random_aksara[Math.floor(Math.random() * random_aksara.length)];
 
   res.json(response);
 }
 
 module.exports = {
-  predictMain,
+  predictMainLampung,
+  predictMainSunda,
+  predictMainBali,
   predictRandom
 };
